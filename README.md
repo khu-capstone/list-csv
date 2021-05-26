@@ -28,4 +28,10 @@ python3 main.py wiki_urls.txt ul result.txt
 
 ## Results
 
+csv files with such format:
+
+```s
+<url>,<original text>,<previous text>
+```
+
 see [result](/result.csv).
