@@ -32,7 +32,8 @@ def process(url, html, tag):
 def main(input_filename, tag_name, output_filename):
     with open(input_filename, 'r', encoding = 'utf-8') as input_file:
         urls = input_file.read().splitlines()
-            
+
+    count = 0
     for url in urls:
         print("url: ", url)
         # get article only url exist
@@ -44,10 +45,16 @@ def main(input_filename, tag_name, output_filename):
             print("ERROR: ", url, "doesn't exist")
             continue
         # process sentences from html
-        results = process(url, article.html, tag_name)
-        with open(output_filename, 'a', encoding = 'utf-8') as output_file:
-            for result in results:
-                output_file.write(result + '\n')
+        # use try-catch for some broker error
+        try:
+            results = process(url, article.html, tag_name)
+            with open(output_filename, 'a', encoding = 'utf-8') as output_file:
+                for result in results:
+                    output_file.write(str(count) + ',' + result + '\n')
+                    count += 1
+        except:
+            print("ERROR: broker error at ", url)
+            continue
 
 if __name__ == '__main__':
     # check argument length valid
