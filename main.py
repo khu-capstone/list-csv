@@ -9,6 +9,9 @@ def argument_check():
     if len(sys.argv) != 4:
         print("Please enter command like this: python3 main.py <input filename> <tag name> <output filename>")
         exit()
+    if sys.argv[2] not in ['ul', 'ol']:
+        print("only ul and ol tag available")
+        exit()
 
 # get current-previous sentence combinations from html
 def process(url, html, tag):
