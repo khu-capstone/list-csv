@@ -74,7 +74,7 @@ class Broker():
     # update stack: pop if closing tag, push if open tag
     def update_stack(self):
         # if close tag, pop tag
-        if self.tag and self.tag[0] == '/':
+        if self.tag[0] == '/':
             self.stack.pop()
         # else open tag with closing, push tag
         elif self.tag not in self.non_closing_tags:
