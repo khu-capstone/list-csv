@@ -34,4 +34,4 @@ csv files with such format:
 <url>,<original text>,<previous text>
 ```
 
-see [result](/result.csv).
+see [result](/result).
