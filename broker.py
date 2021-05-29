@@ -15,6 +15,7 @@ class Broker():
         self.text = ''
         # tags with no closing
         self.non_closing_tags = ["area", "base", "br", "col", "command", "embeded", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr", "!--"]
+        self.no_using_tags = ["b", "strong", "i", "em", "mark", "small", "del", "ins", "sub", "sup", "/b", "/strong", "/i", "/em", "/mark", "/small", "/del", "/ins", "/sub", "/sup"]
         # tags with article
         self.article_tags = ['div', 'p', 'li', 'ul', 'ol', 'h1', 'h2', 'h3', 'dt', 'dt']
         self.process()
@@ -65,6 +66,8 @@ class Broker():
     def update_stack(self):
         if self.tag == '/li':
             self.block += 1
+        if self.tag in self.no_using_tags:
+            return
         # if close tag, pop tag
         if self.tag[0] == '/':
             self.stack.pop()
@@ -102,6 +105,8 @@ class Broker():
             self.tags.append(self.tag)
         # remove header [edit] for wikipedia
         if self.has_header(self.tags) and self.text in ['[', 'edit', ']']:
+            return
+        if self.tags == ['div']: # remove just div text
             return
         self.data.append({"tag":'>'.join(self.tags), "text":self.text, "block":self.block})
 
@@ -172,7 +177,7 @@ class SentenceBroker(Broker):
                 # "abcd", "abcd"
                 if text == self.sentence[index_i][index_j:]:
                     article_tag = self.deep_article_tag(block['tag'])
-                    self.sentences.append({'line':self.line, 'tag':article_tag, 'text':self.sentence[index_i]})
+                    self.sentences.append({'tag':article_tag, 'text':self.sentence[index_i]})
                     self.line += 1
                     text = ''
                     index_i += 1
@@ -253,7 +258,6 @@ class SentenceBroker(Broker):
     # remove wiki specific
     def remove_wiki(self):
         self.remove_pattern('\[\d+\]')
-        self.remove_pattern('\[edit\]')
         
     def remove_pattern(self, pattern):
         regex = re.compile(pattern)
@@ -264,8 +268,9 @@ class SentenceBroker(Broker):
     def remove_empty(self):
         rs = []
         for sentence in self.sentences:
-            if sentence['text']:
-                rs.append(sentence)
+            if not sentence['text'] or sentence['text'] in ['"', "'"]:
+                continue
+            rs.append(sentence)
         self.sentences = rs[:]
 
     def get_list_text(self, tag, client):

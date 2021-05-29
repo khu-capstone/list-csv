@@ -16,5 +16,5 @@ if __name__ == "__main__":
         # use try-catch for some broker error
         html = article.html
         sb = SentenceBroker(html)
-        for d in sb.data:
+        for d in sb.sentences:
             print(d)
