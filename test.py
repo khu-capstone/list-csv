@@ -2,7 +2,7 @@ from article import Article
 from broker import SentenceBroker
 
 if __name__ == "__main__":
-    urls = ["https://en.wikipedia.org/wiki/!"]
+    urls = ["https://en.wikipedia.org/wiki/!Decapitacion!"]
     for url in urls:
         # get article only url exist
         try:
@@ -14,10 +14,7 @@ if __name__ == "__main__":
             continue
         # process sentences from html
         # use try-catch for some broker error
-        try:
-            html = article.html
-            sb = SentenceBroker(html)
-            for s in sb.sentences:
-                print(s)
-        except:
-            print("ERROR at broker")
+        html = article.html
+        sb = SentenceBroker(html)
+        for d in sb.data:
+            print(d)
