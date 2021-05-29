@@ -7,11 +7,9 @@ class Broker():
         self.html = html
         self.index = 0 # Broker index
         self.stack = [] # tag stack
-        self.data = [] # structured data with tag, attr, text, block
+        self.data = [] # structured data with tag, text, block
         self.tag = None
         self.tags = None
-        self.attr = None
-        self.attrs = None
         self.block = 0 # Borker index for block
         self.blocks = []
         self.text = ''
@@ -27,8 +25,8 @@ class Broker():
             if self.html[self.index] in "\n\t":
                 self.index += 1
                 continue
-            # lf other tags
-            elif self.html[self.index] == '<' and self.html[self.index + 1] not in "0123456789": # <0.01
+            # lf tags
+            if self.html[self.index] == '<' and self.html[self.index + 1] not in "0123456789": # <0.01
                 self.tag_process()
             # else not tag
             else:
@@ -39,7 +37,6 @@ class Broker():
     def tag_process(self):
         self.update_tags()
         self.update_tag()
-        self.update_attr()
         self.update_stack()
         self.update_block()
 
@@ -63,26 +60,23 @@ class Broker():
             self.tag = list(self.tags.split(' '))[0][1:]
         else: # single open/close tag (<p>, </p> <span> ...)
             self.tag = self.tags[1:-1]
-  
-    # find attr(id="..", class="..." ...) from tags(<p>, <span id="..">, <div ...>, </p> ...
-    def update_attr(self):
-        if ' ' in self.tags: # if nonsingle tags
-            self.attr = list(self.tags[:-1].split(' ')[1:])
-        else:
-            self.attr = None
 
     # update stack: pop if closing tag, push if open tag
     def update_stack(self):
+        if self.tag == '/li':
+            self.block += 1
         # if close tag, pop tag
         if self.tag[0] == '/':
             self.stack.pop()
         # else open tag with closing, push tag
         elif self.tag not in self.non_closing_tags:
-            self.stack.append([self.tag, self.attr])
+            self.stack.append(self.tag)
     
     # update block: seperate article into blocks
     def update_block(self):
-        if self.tag in self.article_tags:
+        if 'li' in self.stack:
+            return
+        elif self.tag in self.article_tags:
             self.block += 1
     
     # find text(not tags) from html
@@ -97,20 +91,19 @@ class Broker():
             self.text += self.html[self.index]
             self.index += 1
 
-    # update sentence: save texts with all tags and attrs
+    # update sentence: save texts with all tags
     def update_data(self):
         if self.text in "\n\t" or self.text == ' '*len(self.text):
             return # for empty text
         if self.text in ['^']:
             return
-        self.tags, self.attrs = [], []
-        for self.tag, self.attr in self.stack:
+        self.tags = []
+        for self.tag in self.stack:
             self.tags.append(self.tag)
-            self.attrs.append(self.attr)
         # remove header [edit] for wikipedia
         if self.has_header(self.tags) and self.text in ['[', 'edit', ']']:
             return
-        self.data.append({"tag":'>'.join(self.tags), "attr":self.attrs, "text":self.text, "block":self.block})
+        self.data.append({"tag":'>'.join(self.tags), "text":self.text, "block":self.block})
 
     # split data at dot
     def split_dots(self):
@@ -120,9 +113,9 @@ class Broker():
             while '.' in text:
                 index = text.find('.')
                 new_text = text[:index + 1]
-                datas.append({"tag":data["tag"], "attr":data["attr"], "text":new_text, "block": data["block"]})
+                datas.append({"tag":data["tag"], "text":new_text, "block": data["block"]})
                 text = text[index + 1:]
-            datas.append({"tag":data["tag"], "attr":data["attr"], "text":text, "block": data["block"]})
+            datas.append({"tag":data["tag"], "text":text, "block": data["block"]})
         self.data = datas[:]
     
     # split document into block
