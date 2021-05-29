@@ -101,15 +101,16 @@ class Broker():
     def update_data(self):
         if self.text in "\n\t" or self.text == ' '*len(self.text):
             return # for empty text
+        if self.text in ['^']:
+            return
         self.tags, self.attrs = [], []
         for self.tag, self.attr in self.stack:
             self.tags.append(self.tag)
             self.attrs.append(self.attr)
-        # compress header
-        if self.data and self.has_header(self.tags) and self.has_header(self.data[-1]['tag']):
-            self.data[-1]['text'] += self.text
-        else:
-            self.data.append({"tag":'>'.join(self.tags), "attr":self.attrs, "text":self.text, "block":self.block})
+        # remove header [edit] for wikipedia
+        if self.has_header(self.tags) and self.text in ['[', 'edit', ']']:
+            return
+        self.data.append({"tag":'>'.join(self.tags), "attr":self.attrs, "text":self.text, "block":self.block})
 
     # split data at dot
     def split_dots(self):
