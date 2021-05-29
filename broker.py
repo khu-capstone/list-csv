@@ -16,7 +16,7 @@ class Broker():
         # tags with no closing
         self.non_closing_tags = ["area", "base", "br", "col", "command", "embeded", "hr", "img", "input", "keygen", "link", "meta", "param", "source", "track", "wbr", "!--"]
         # tags with article
-        self.article_tags = ['div', 'p', 'li', 'ul', 'ol', 'h1', 'h2', 'h3']
+        self.article_tags = ['div', 'p', 'li', 'ul', 'ol', 'h1', 'h2', 'h3', 'dt', 'dt']
         self.process()
     
     def process(self):
