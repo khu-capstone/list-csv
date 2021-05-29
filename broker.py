@@ -177,7 +177,7 @@ class SentenceBroker(Broker):
                 # "abcd", "abcd"
                 if text == self.sentence[index_i][index_j:]:
                     article_tag = self.deep_article_tag(block['tag'])
-                    self.sentences.append({'tag':article_tag, 'text':self.sentence[index_i]})
+                    self.sentences.append({'line':self.line, 'tag':article_tag, 'text':self.sentence[index_i]})
                     self.line += 1
                     text = ''
                     index_i += 1
