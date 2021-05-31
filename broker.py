@@ -290,12 +290,55 @@ class SentenceBroker(Broker):
                     rs.append(prev[:-1] + orig)
                 else:
                     for triple in client.annotate(prev):
-                        rs.append(triple['subject'] + ' ' + triple['relation'] + ' ' + orig)
+                        rs.append(triple['subject'] + '-' + triple['relation'] + '-' + orig)
         return '.'.join(rs)
     
     def getListText(self, tag):
         with StanfordOpenIE() as client:
             return self.get_list_text(tag, client)
+
+    def get_triple(self, client, prev, orig):
+        if not prev or not orig:
+            return None
+        
+        pos_prev = pos_tag(word_tokenize(prev))
+        pos_orig = pos_tag(word_tokenize(orig))
+        # 위의 문장에서 동사를 찾을 수 있다면
+        if self.has_verb(pos_prev):
+            subject, relation, _object = None, None, None
+            for triple in client.annotate(prev):
+                subject, relation = triple['subject'], triple['relation']
+                break
+            if not subject or not relation:
+                return None
+            # 아래 문장에서 동사를 찾을 수 있다면
+            if self.has_verb(pos_orig):
+                for triple in client.annotate(orig):
+                    _object = triple['object']
+                if not _object:
+                    return None
+                return {'subject': subject, 'relation': relation, 'object': _object}
+            else: # 아래 문장에서 동사를 찾을 수 없다면
+                return {'subject': subject, 'relation': relation, 'object': orig}
+        # 위의 문장에서 동사를 찾을 수 없다면
+        else:
+            # 아래 문장에서 동사를 찾을 수 있다면
+            if self.has_verb(pos_orig):
+                relation, _object = None, None
+                for triple in client.annotate(orig):
+                    relation, _object = triple['relation'], triple['object']
+                    break
+                if not relation or not _object:
+                    return None
+                return {'subject': prev, 'relation': relation, 'object': _object}
+            # 아래 문장에서 동사를 찾을 수 없다면
+            else:
+                # include 로 포함한다.
+                return {'subject': prev, 'relation': "include", 'object': orig}
+
+    def getTriple(self, prev, orig):
+        with StanfordOpenIE() as client:
+            return self.get_triple(client, prev, orig)
     
     @staticmethod
     def verb(pos):
@@ -305,3 +348,10 @@ class SentenceBroker(Broker):
                     return i, [p[0], pos[i + 1][0]]
                 return i, [p[0]]
         return i, None
+    
+    @staticmethod 
+    def has_verb(pos):
+        for p in pos:
+            if 'VB' in p[1]:
+                return True
+        return False
