@@ -1,46 +1,25 @@
-from article import Article
-from broker import SentenceBroker
-import sys
+rs = [0,0,0,0]
 
-def process(url, html, tag):
-    broker = SentenceBroker(html)
-    results = []
-    for sentence in broker.get_sentences_with_tag(tag):
-        original = sentence['text']
-        previous = broker.get_previous_sentence(sentence, tag)
-        rs = broker.getTriple(previous, original)
-        if rs:
-            results.append(rs)
-    return results
+with open('triples/ul_filter.csv', 'r', encoding='utf-8') as f:
+    line = f.readline()
+    while line:
+        score = int(line.split(',')[0])
+        rs[score] += 1
+        line = f.readline()
+print(rs, sum(rs))
 
-def main(input_filename, tag_name, output_filename):
-    with open(input_filename, 'r', encoding = 'utf-8') as input_file:
-        urls = input_file.read().splitlines()
+# Explanatory notes
+# Footnotes
+# Reference
+# See also
+# Notes
+# Sources
+# Table notes
 
-    count = 0
-    for url in urls:
-        print("url: ", url)
-        # get article only url exist
-        try:
-            article = Article(url)
-        except KeyboardInterrupt:
-            break
-        except:
-            print("ERROR: ", url, "doesn't exist")
-            continue
-        # process sentences from html
-        # use try-catch for some broker error
-        try:
-            results = process(url, article.html, tag_name)
-            with open(output_filename, 'a', encoding = 'utf-8') as output_file:
-                for result in results:
-                    output_file.write(str(count) + ',"' + str(result) + '"\n')
-                    count += 1
-        except:
-            print("broker ERROR at ", url)
+# ol
+# [626, 85, 120, 84] 915
+# 69%, 9%, 13%, 9%
 
-if __name__ == '__main__':
-    # arguments
-    input_filename, tag_name, output_filename = sys.argv[1], sys.argv[2], sys.argv[3]
-    # main
-    main(input_filename, tag_name, output_filename)
+# ul
+# [667, 73, 65, 122] 927
+# 72%, 8%, 7%, 13%
